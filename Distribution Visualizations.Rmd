@@ -1,0 +1,52 @@
+---
+title: "Distribution Visualizations - ggplot2"
+date: "9/9/2021"
+output: word_document
+---
+
+```{r}
+ggplot() +
+  xlim(-5, 5) +
+  geom_function(fun = dnorm)
+```
+
+```{R}
+ggplot() +
+  xlim(-1, 1) +
+  geom_function(fun = function(x) sin(1/x), n = 1e5)
+```
+
+```{r}
+# get some data on sat scores for 100 students
+sat_data <- read.csv("https://www.openintro.org/data/csv/satgpa.csv")
+```
+
+```{r}
+g3 <- ggplot(data = sat_data, aes(x = sat_sum, y = ..density..)) +
+  geom_histogram(fill = "lightblue") +
+  geom_density(fill = "pink", alpha = 0.4)
+```
+
+```{r}
+sat_mean <- mean(sat_data$sat_sum)
+sat_sd <- sd(sat_data$sat_sum)
+g3 +
+  geom_function(
+    fun = function(x) dnorm(x, mean = sat_mean, sd = sat_sd), 
+    linetype = "dashed",
+    inherit.aes = FALSE
+  )
+```
+
+```{r}
+model <- lm(sat_sum ~ hs_gpa, data = sat_data)
+predictions <- predict(model, data.frame(hs_gpa = sat_data$hs_gpa), 
+                       interval = "prediction")
+ggplot(data = sat_data, aes(x = hs_gpa)) +
+  geom_point(aes(y = sat_sum), color = "lightblue") +
+  geom_smooth(aes(y = sat_sum), color = "red") +
+  geom_ribbon(aes(ymin = predictions[,'lwr'], 
+                  ymax = predictions[,'upr']), 
+                  fill = "pink",
+                  alpha = 0.3)
+```
