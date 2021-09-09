@@ -1,0 +1,128 @@
+---
+title: "Distribution Visualizations - ggplot2"
+date: "9/9/2021"
+output: word_document
+---
+
+SAT Scores
+
+```{r}
+ggplot() +
+  xlim(-5, 5) +
+  geom_function(fun = dnorm)
+```
+
+```{R}
+ggplot() +
+  xlim(-1, 1) +
+  geom_function(fun = function(x) sin(1/x), n = 1e5)
+```
+
+```{r}
+# get some data on sat scores for 100 students
+sat_data <- read.csv("https://www.openintro.org/data/csv/satgpa.csv")
+```
+
+```{r}
+g3 <- ggplot(data = sat_data, aes(x = sat_sum, y = ..density..)) +
+  geom_histogram(fill = "lightblue") +
+  geom_density(fill = "pink", alpha = 0.4)
+```
+
+```{r}
+sat_mean <- mean(sat_data$sat_sum)
+sat_sd <- sd(sat_data$sat_sum)
+g3 +
+  geom_function(
+    fun = function(x) dnorm(x, mean = sat_mean, sd = sat_sd), 
+    linetype = "dashed",
+    inherit.aes = FALSE
+  )
+```
+
+```{r}
+#High school gpa predicting SAT scores
+
+model <- lm(sat_sum ~ hs_gpa, data = sat_data)
+predictions <- predict(model, data.frame(hs_gpa = sat_data$hs_gpa), 
+                       interval = "prediction")
+ggplot(data = sat_data, aes(x = hs_gpa)) +
+  geom_point(aes(y = sat_sum), color = "lightblue") +
+  geom_smooth(aes(y = sat_sum), color = "red") +
+  geom_ribbon(aes(ymin = predictions[,'lwr'], 
+                  ymax = predictions[,'upr']), 
+                  fill = "pink",
+                  alpha = 0.3)
+```
+
+
+#Average life expectancy across the globe
+
+```{r}
+library(ggplot2)
+library(plotly)
+library(gapminder)
+
+p <- gapminder %>%
+  filter(year==1977) %>%
+  ggplot( aes(gdpPercap, lifeExp, size = pop, color=continent)) +
+  geom_point() +
+  theme_bw()
+
+ggplotly(p)
+```
+
+```{r}
+# library
+library(ggplot2)
+
+# Iris dataset
+head(iris)
+
+# plot
+ggplot(data=iris, aes(x=Sepal.Length, Petal.Length)) +
+  geom_point() +
+  geom_rug(col="steelblue",alpha=0.1, size=1.5)
+```
+
+```{r}
+# Libraries
+library(ggplot2)
+library(dplyr)
+library(plotly)
+library(viridis)
+library(hrbrthemes)
+
+# The dataset is provided in the gapminder library
+library(gapminder)
+data <- gapminder %>% filter(year=="2007") %>% dplyr::select(-year)
+
+# Interactive version
+p <- data %>%
+  mutate(gdpPercap=round(gdpPercap,0)) %>%
+  mutate(pop=round(pop/1000000,2)) %>%
+  mutate(lifeExp=round(lifeExp,1)) %>%
+  
+  # Reorder countries to having big bubbles on top
+  arrange(desc(pop)) %>%
+  mutate(country = factor(country, country)) %>%
+  
+  # prepare text for tooltip
+  mutate(text = paste("Country: ", country, "\nPopulation (M): ", pop, "\nLife Expectancy: ", lifeExp, "\nGdp per capita: ", gdpPercap, sep="")) %>%
+  
+  # Classic ggplot
+  ggplot( aes(x=gdpPercap, y=lifeExp, size = pop, color = continent, text=text)) +
+    geom_point(alpha=0.7) +
+    scale_size(range = c(1.4, 19), name="Population (M)") +
+    scale_color_viridis(discrete=TRUE, guide=FALSE) +
+    theme_ipsum() +
+    theme(legend.position="none")
+
+# turn ggplot interactive with plotly
+pp <- ggplotly(p, tooltip="text")
+pp
+
+# save the widget
+# library(htmlwidgets)
+# saveWidget(pp, file=paste0( getwd(), "/HtmlWidget/ggplotlyBubblechart.html"))
+```
