@@ -1,0 +1,100 @@
+---
+title: "FSP Clustering Analysis"
+author: Lawrence B. Chan, PhD
+output: html_document
+date: '2022-07-05'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+install.packages("ClusterR")
+library("ClusterR")
+library(cluster)
+```
+
+```{r}
+set.seed(10)
+kmeans.re <-kmeans(FSP, centers = 3, nstart = 10)
+kmeans.re
+```
+
+```{r}
+kmeans.re$cluster
+```
+
+```{r}
+cm <- table(FSP$AgeEndFY, kmeans.re$cluster)
+cm
+```
+
+```{r}
+plot(FSP[c("Hosp.post", "AgeEndFY")])
+plot(FSP[c("Hosp.post", "AgeEndFY")], 
+     col = kmeans.re$cluster)
+plot(FSP[c("Hosp.post", "AgeEndFY")], 
+     col = kmeans.re$cluster, 
+     main = "K-means with 3 clusters")
+```
+
+```{r}
+kmeans.re$centers
+kmeans.re$centers[, c("AgeEndFY")]
+```
+
+```{r}
+y_kmeans <- kmeans.re$cluster
+clusplot(FSP[, c("Hosp.post", "AgeEndFY")],
+         y_kmeans,
+         lines = 0,
+         shade = TRUE,
+         color = TRUE,
+         labels = 0,
+         plotchar = FALSE,
+         span = TRUE,
+         main = paste("Cluster FSP"),
+         xlab = 'AgeEndFY',
+         ylab = 'Hosp.post')
+```
+
+```{r}
+y_kmeans <- kmeans.re$cluster
+clusplot(FSP[, c("Jail.post", "AgeEndFY")],
+         y_kmeans,
+         lines = 0,
+         shade = TRUE,
+         color = TRUE,
+         labels = 0,
+         plotchar = FALSE,
+         span = TRUE,
+         main = paste("Cluster FSP"),
+         xlab = 'Jail.post',
+         ylab = 'AgeEndFY')
+```
+
+```{r}
+library(ggplot2)
+g = ggplot(FSP, aes(x = AgeEndFY, y = Hosp.post)) + geom_point() + labs(title = "Plot of Hosp.post by Age")
+print(g)
+```
+
+```{r}
+# to reproduce the results
+# you have to use set.seed()
+set.seed(1)
+wss<- NULL
+for (i in 1:10){
+  fit = kmeans(FSP,centers = i)
+  wss = c(wss, fit$tot.withinss)
+}
+plot(1:10, wss, type = "o")
+```
+
+```{r}
+install.packages("fpc")
+fit <- kmeans(FSP, 4,)
+library(fpc)
+plotcluster(FSP,fit$cluster,pointsbyclvecd=FALSE)
+```
